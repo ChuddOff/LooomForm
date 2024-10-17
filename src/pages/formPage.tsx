@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
+import { InputStartContent } from "@/shared/ui/inputStartContent";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { FC } from "react";
@@ -51,6 +52,9 @@ const formSchema = z.object({
 
 const FormPage: FC = () => {
   const [open, setOpen] = React.useState(false);
+
+  // Управляемые компоненты
+  const [name, setName] = React.useState<string | undefined>(undefined);
 
   const myForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -107,7 +111,9 @@ const FormPage: FC = () => {
                       <Input placeholder="Футболки с печатью" {...field} />
                     </FormControl>
                     <FormDescription className="text-end">
-                      0 из 10000 символов (минимум 5)
+                      {`${
+                        myForm.getValues("name")?.length || 0
+                      } из 10000 символов (минимум 5)`}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -127,17 +133,58 @@ const FormPage: FC = () => {
                       />
                     </FormControl>
                     <FormDescription className="">
-                      0 из 10000 символов (минимум 20)
+                      {`${
+                        myForm.getValues("description")?.length || 0
+                      } из 10000 символов (минимум 20)`}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={myForm.control}
+                name="cost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Укажите стоимость услуги</FormLabel>
+                    <FormControl>
+                      <InputStartContent
+                        placeholder="Минимум 500 руб"
+                        content="Руб."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={myForm.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Срок исполнения услуги</FormLabel>
+                    <FormControl className="flex">
+                      <InputStartContent
+                        placeholder="500"
+                        content="Дней"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex gap-[24px] w-full">
+                <Button type="submit" className="w-full" variant="outline">
+                  Отменить
+                </Button>
+                <Button type="submit" className="w-full">
+                  Сохранить
+                </Button>
+              </div>
             </form>
           </Form>
-          <DialogFooter>
-            <Button type="submit">Save changes</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </main>
