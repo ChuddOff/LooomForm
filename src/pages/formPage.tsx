@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
@@ -70,12 +69,12 @@ const formSchema = z.object({
     .min(20, { message: "Минимум 20 символов" })
     .max(10000, { message: "Максимум 10000 символов" }),
   image: z
-    .instanceof(FileList)
-    .refine((files) => files.length > 0, {
-      message: "Выберите изображение.",
-    })
-    .refine((files) => files[0].size <= 10 * 1024 * 1024, {
+    .instanceof(File)
+    .refine((file) => file.size <= 10 * 1024 * 1024, {
       message: "Размер файла не должен превышать 10 МБ.",
+    })
+    .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
+      message: "Загрузите изображение формата JPG или PNG!",
     }),
   cost: z
     .number({ required_error: "Обязательное поле" })
@@ -139,6 +138,8 @@ const FormPage: FC = () => {
   const [openQuestionAdd, setOpenQuestionAdd] = React.useState<boolean>(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
 
+  const formRef = React.useRef<HTMLFormElement>(null);
+
   const formQuestionAdd = useForm<z.infer<typeof schemaQuestionAdd>>({
     resolver: zodResolver(schemaQuestionAdd),
     defaultValues: {
@@ -168,8 +169,7 @@ const FormPage: FC = () => {
       questions: [
         {
           id: 0,
-          question:
-            "Это частый вопрос, который задают заказчики. Мне надоело на него отвечать, поэтому я напишу его сюда",
+          question: "Это вопрос, который задают заказчики.",
           answer:
             "Lorem ipsum dolor sit amet consectetur adipiscing elit vehicula interdum penatibus, nullam risus sagittis ultricies cras metus elementum litora etiam sapien, nam donec posuere gravida orci lacinia sem est platea. Venenatis nibh potenti sed magna quis metus, congue hac porttitor justo quam ut parturient, ad arcu sociis magnis taciti. Sem scelerisqu.",
         },
@@ -178,13 +178,11 @@ const FormPage: FC = () => {
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageSrc(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      console.log("Загружен файл:", files[0].name);
+      setImageSrc(URL.createObjectURL(files[0]));
+      myForm.setValue("image", files[0]);
     }
   };
 
@@ -210,8 +208,16 @@ const FormPage: FC = () => {
           <ScrollArea className="h-[950px] w-full rounded-md pr-[12px]">
             <Form {...myForm}>
               <form
+                ref={formRef}
                 className="flex flex-col gap-6"
-                onSubmit={myForm.handleSubmit((data) => console.log(data))}
+                onSubmit={myForm.handleSubmit(() => {
+                  const formData = new FormData(
+                    formRef.current as HTMLFormElement
+                  );
+                  formData.forEach((value, key) => {
+                    console.log(`${key}:`, value);
+                  });
+                })}
               >
                 <FormField
                   control={myForm.control}
@@ -264,9 +270,9 @@ const FormPage: FC = () => {
                           <CardContent className="flex gap-[24px] max-h-[264px] h-full items-center">
                             <InputFile
                               id="image"
-                              type="file"
                               placeholder="Футболки с печатью"
                               {...field}
+                              value=""
                               className="h-full"
                               onChange={handleFileChange}
                             />
