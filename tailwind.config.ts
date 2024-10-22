@@ -14,6 +14,8 @@ const config: Config = {
     },
     extend: {
       colors: {
+        grayInput: "hsl(var(--grayInput))",
+        gray: "hsl(var(--gray))",
         link: "hsl(var(--link))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

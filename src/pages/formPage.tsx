@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
@@ -31,8 +32,11 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
+import { InputFile } from "@/shared/ui/inputFile";
 import { InputStartContent } from "@/shared/ui/inputStartContent";
+import { Label } from "@/shared/ui/label";
 import { ScrollArea } from "@/shared/ui/scroll-area";
+import { Slider } from "@/shared/ui/slider";
 import {
   Table,
   TableBody,
@@ -44,9 +48,15 @@ import {
 } from "@/shared/ui/table";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Copy, Ellipsis, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Ellipsis,
+  Trash2,
+  Image as ImageIcon,
+  RefreshCw,
+} from "lucide-react";
 import Image from "next/image";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -59,9 +69,14 @@ const formSchema = z.object({
     .string({ required_error: "Обязательное поле" })
     .min(20, { message: "Минимум 20 символов" })
     .max(10000, { message: "Максимум 10000 символов" }),
-  image: z.any().refine((file) => file instanceof File, {
-    message: "Необходимо загрузить файл",
-  }),
+  image: z
+    .instanceof(FileList)
+    .refine((files) => files.length > 0, {
+      message: "Выберите изображение.",
+    })
+    .refine((files) => files[0].size <= 10 * 1024 * 1024, {
+      message: "Размер файла не должен превышать 10 МБ.",
+    }),
   cost: z
     .number({ required_error: "Обязательное поле" })
     .gte(500, { message: "Минимум 500 руб" }),
@@ -90,7 +105,7 @@ const formSchema = z.object({
     ),
   questions: z.array(
     z.object({
-      id: z.number().optional(),
+      id: z.number(),
       question: z
         .string({ required_error: "Обязательное поле" })
         .min(4, {
@@ -122,6 +137,7 @@ const schemaQuestionAdd = z.object({
 const FormPage: FC = () => {
   const [open, setOpen] = React.useState<boolean>(false);
   const [openQuestionAdd, setOpenQuestionAdd] = React.useState<boolean>(false);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
 
   const formQuestionAdd = useForm<z.infer<typeof schemaQuestionAdd>>({
     resolver: zodResolver(schemaQuestionAdd),
@@ -160,6 +176,17 @@ const FormPage: FC = () => {
       ],
     },
   });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageSrc(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <main className="flex justify-center items-center w-full h-[100vh]">
@@ -222,6 +249,120 @@ const FormPage: FC = () => {
                           myForm.getValues("description")?.length || 0
                         } из 10000 символов (минимум 20)`}
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={myForm.control}
+                  name="image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Загрузите обложку вашей услуги</FormLabel>
+                      <FormControl>
+                        <Card className="max-h-[264px] h-full">
+                          <CardContent className="flex gap-[24px] max-h-[264px] h-full items-center">
+                            <InputFile
+                              id="image"
+                              type="file"
+                              placeholder="Футболки с печатью"
+                              {...field}
+                              className="h-full"
+                              onChange={handleFileChange}
+                            />
+                            {!imageSrc ? (
+                              <>
+                                <Label
+                                  htmlFor="image"
+                                  className="flex flex-col gap-[6px] text-center items-center justify-center border-gray border-dashed border-[2px] bg-card rounded-[12px] cursor-pointer px-3 py-2 !w-[500px] !h-[216px] leading-[22px] font-manrope"
+                                >
+                                  <ImageIcon
+                                    className="text-gray"
+                                    width={48}
+                                    height={48}
+                                  />
+                                  <p className="text-[16px] text-gray font-[400]">
+                                    <span className="text-link">Загрузите</span>{" "}
+                                    фото или перетащите сюда
+                                  </p>
+                                  <p className="text-[14px] text-gray font-[400]">
+                                    Размер файла слишком большой
+                                  </p>
+                                  {/* Отображаем текст под SVG */}
+                                </Label>
+                                <Label
+                                  htmlFor="image"
+                                  className="flex flex-col gap-[6px] h-full font-manrope cursor-pointer leading-[22px] font-[400]"
+                                >
+                                  <p className="text-[16px] text-black">
+                                    Максимальный размер 10 мегабайт.
+                                    Рекомендуемое разрешение 800px на 800px
+                                  </p>
+                                  <p className="text-[14px] text-gray">
+                                    Рекомендация: Сделайте обложкой фото, на
+                                    которой лучше всего видна работа
+                                  </p>
+                                </Label>
+                              </>
+                            ) : (
+                              <>
+                                <Label
+                                  htmlFor="image"
+                                  className="w-full flex flex-col gap-[6px] text-center items-center justify-center border-gray bg-card rounded-[12px] cursor-pointer !h-[216px] leading-[22px] font-manrope"
+                                >
+                                  <Image
+                                    src={imageSrc}
+                                    width={288}
+                                    height={480}
+                                    className="!w-[100%] !h-[100%] object-cover rounded-[12px]"
+                                    alt="userImage"
+                                  />
+                                </Label>
+                                <div className="flex flex-col gap-[20px] h-full w-full font-manrope leading-[22px] font-[400]">
+                                  <div className="flex gap-[10px] w-full">
+                                    <p className="text-[16px] text-black">
+                                      Увеличить
+                                    </p>
+                                    <Slider
+                                      defaultValue={[0]}
+                                      max={100}
+                                      step={1}
+                                      className={"w-full"}
+                                    />
+                                  </div>
+                                  <div className="flex gap-[10px] w-full">
+                                    <p className="text-[16px] text-black">
+                                      Повернуть
+                                    </p>
+                                    <RefreshCw width={24} height={24} />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    className="w-full justify-start p-0 text-link"
+                                    variant="link"
+                                    onClick={() => setOpenQuestionAdd(false)}
+                                  >
+                                    Выбрать другое фото
+                                  </Button>
+                                  <div className="flex gap-[24px] w-full">
+                                    <Button
+                                      type="button"
+                                      className="w-full"
+                                      variant="outline"
+                                      onClick={() => setOpenQuestionAdd(false)}
+                                    >
+                                      Отменить
+                                    </Button>
+                                    <Button type="submit" className="w-full">
+                                      Сохранить
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -535,7 +676,7 @@ const FormPage: FC = () => {
                                           </div>
                                         </section>
                                       </CardTitle>
-                                      <CardDescription className="text-[14px] pt-[12px]">
+                                      <CardDescription className="text-[14px] pt-[12px] text-gray">
                                         Ответ исполнителя:
                                       </CardDescription>
                                     </CardHeader>

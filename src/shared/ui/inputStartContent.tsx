@@ -18,7 +18,7 @@ const InputStartContent = React.forwardRef<HTMLInputElement, InputProps>(
             content: `"${content}"`,
           }}
           className={cn(
-            `rounded-r-[12px] w-full px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 focus:border-input focus:outline-none text-[16px]`,
+            `rounded-r-[12px] w-full px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 focus:border-input focus:outline-none text-[16px] text-grayInput`,
             className
           )}
           ref={ref}
