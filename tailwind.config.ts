@@ -9,8 +9,12 @@ const config: Config = {
     "./src/shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    fontFamily: {
+      manrope: ["Manrope", "sans-serif"],
+    },
     extend: {
       colors: {
+        link: "hsl(var(--link))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
