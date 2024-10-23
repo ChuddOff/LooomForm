@@ -3,6 +3,8 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   darkMode: ["class"],
   content: [
+    "./src/entities/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,6 +16,7 @@ const config: Config = {
     },
     extend: {
       colors: {
+        orange: "hsl(var(--orange))",
         grayInput: "hsl(var(--grayInput))",
         gray: "hsl(var(--gray))",
         link: "hsl(var(--link))",

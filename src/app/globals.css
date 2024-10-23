@@ -36,6 +36,7 @@ label {
 
 @layer base {
   :root {
+    --orange: 18, 76%, 67%;
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
     --card-foreground: 224 71.4% 4.1%;

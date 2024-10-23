@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Image } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface InputProps

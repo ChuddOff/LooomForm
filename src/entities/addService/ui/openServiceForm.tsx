@@ -1,5 +1,6 @@
 "use client";
 
+import { ServiceTable } from "@/features/serviceTable";
 import { Button } from "@/shared/ui/button";
 import {
   Card,
@@ -16,12 +17,6 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -36,24 +31,9 @@ import { InputStartContent } from "@/shared/ui/inputStartContent";
 import { Label } from "@/shared/ui/label";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Slider } from "@/shared/ui/slider";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Copy,
-  Ellipsis,
-  Trash2,
-  Image as ImageIcon,
-  RefreshCw,
-} from "lucide-react";
+import { Image as ImageIcon, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import React, { FC, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -74,7 +54,7 @@ const formSchema = z.object({
       message: "Размер файла не должен превышать 10 МБ.",
     })
     .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
-      message: "Загрузите изображение формата JPG или PNG!",
+      message: "Загрузите изобра��ение формата JPG или PNG!",
     }),
   cost: z
     .number({ required_error: "Обязательное поле" })
@@ -84,41 +64,28 @@ const formSchema = z.object({
     .array(
       z.object({
         id: z.number({ required_error: "Обязательное поле" }),
-        serviceName: z.string({
-          required_error: "Обязательное поле",
-        }),
-        cost: z.number({
-          invalid_type_error: "Введите нормальное число",
-        }),
+        serviceName: z
+          .string({
+            required_error: "Обязательное поле",
+          })
+          .min(4, { message: "Минимум 4 символа" }),
+        cost: z
+          .number({
+            invalid_type_error: "Введите нормальное число",
+          })
+          .min(0, { message: "Введите нормальное число" }),
       })
     )
-    .min(1, { message: "Необходимо добавить хотя бы одно поле" })
-    .refine(
-      (services) =>
-        services.some(
-          (service) => service.serviceName?.trim() !== "" || service.cost > 0
-        ),
-      {
-        message: "Необходимо добавить хотя бы одно поле",
-      }
-    ),
-  questions: z.array(
-    z.object({
-      id: z.number(),
-      question: z
-        .string({ required_error: "Обязательное поле" })
-        .min(4, {
-          message: "Минимум 4 символа",
-        })
-        .max(40, { message: "Максимум 40 символов" }),
-      answer: z
-        .string({ required_error: "Обязательное поле" })
-        .min(4, {
-          message: "Минимум 4 символа",
-        })
-        .max(10000, { message: "Максимум 10000 символов" }),
-    })
-  ),
+    .min(1, { message: "Необходимо добавить хотя бы одно поле" }),
+  questions: z
+    .array(
+      z.object({
+        id: z.number(),
+        question: z.string({ required_error: "Обязательное поле" }),
+        answer: z.string({ required_error: "Обязательное поле" }),
+      })
+    )
+    .min(1, { message: "Необходимо добавить хотя бы одно поле" }),
 });
 
 const schemaQuestionAdd = z.object({
@@ -133,10 +100,11 @@ const schemaQuestionAdd = z.object({
     .max(10000, { message: "Максимум 10000 символов" }),
 });
 
-const FormPage: FC = () => {
+export const OpenServiceForm: FC = () => {
   const [open, setOpen] = React.useState<boolean>(false);
   const [openQuestionAdd, setOpenQuestionAdd] = React.useState<boolean>(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [editImage, setEditImage] = useState<boolean>(false);
 
   const formRef = React.useRef<HTMLFormElement>(null);
 
@@ -169,7 +137,8 @@ const FormPage: FC = () => {
       questions: [
         {
           id: 0,
-          question: "Это вопрос, который задают заказчики.",
+          question:
+            "Это частый вопрос, который задают заказчики. Мне надоело на него отвечать, поэтому я напишу его сюда",
           answer:
             "Lorem ipsum dolor sit amet consectetur adipiscing elit vehicula interdum penatibus, nullam risus sagittis ultricies cras metus elementum litora etiam sapien, nam donec posuere gravida orci lacinia sem est platea. Venenatis nibh potenti sed magna quis metus, congue hac porttitor justo quam ut parturient, ad arcu sociis magnis taciti. Sem scelerisqu.",
         },
@@ -180,14 +149,14 @@ const FormPage: FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      console.log("Загружен файл:", files[0].name);
+      setEditImage(true);
       setImageSrc(URL.createObjectURL(files[0]));
       myForm.setValue("image", files[0]);
     }
   };
 
   return (
-    <main className="flex justify-center items-center w-full h-[100vh]">
+    <>
       <Button variant="outline" onClick={() => setOpen(!open)}>
         Добавить
       </Button>
@@ -217,6 +186,7 @@ const FormPage: FC = () => {
                   formData.forEach((value, key) => {
                     console.log(`${key}:`, value);
                   });
+                  setOpen(false);
                 })}
               >
                 <FormField
@@ -340,26 +310,32 @@ const FormPage: FC = () => {
                                     <p className="text-[16px] text-black">
                                       Повернуть
                                     </p>
-                                    <RefreshCw width={24} height={24} />
+                                    <RefreshCw
+                                      width={24}
+                                      height={24}
+                                      className="text-orange cursor-pointer"
+                                    />
                                   </div>
-                                  <Button
-                                    type="button"
-                                    className="w-full justify-start p-0 text-link"
-                                    variant="link"
-                                    onClick={() => setOpenQuestionAdd(false)}
-                                  >
-                                    Выбрать другое фото
-                                  </Button>
-                                  <div className="flex gap-[24px] w-full">
+                                  <Label htmlFor="image">
+                                    <p className="font-manrope text-link underline-offset-3 hover:underline">
+                                      Выбрать другое фото
+                                    </p>
+                                  </Label>
+                                  <div className="flex gap-[10px] w-full">
                                     <Button
+                                      disabled={!editImage}
                                       type="button"
                                       className="w-full"
                                       variant="outline"
-                                      onClick={() => setOpenQuestionAdd(false)}
+                                      onClick={() => setEditImage(false)}
                                     >
                                       Отменить
                                     </Button>
-                                    <Button type="submit" className="w-full">
+                                    <Button
+                                      disabled={!editImage}
+                                      className="w-full"
+                                      onClick={() => setEditImage(false)}
+                                    >
                                       Сохранить
                                     </Button>
                                   </div>
@@ -421,179 +397,7 @@ const FormPage: FC = () => {
                     </FormItem>
                   )}
                 />
-                <Card>
-                  <CardContent>
-                    <FormField
-                      control={myForm.control}
-                      name="service"
-                      render={() => (
-                        <FormItem>
-                          <FormLabel>Товары и услуги</FormLabel>
-                          <FormDescription className="text-start">
-                            Заполните таблицу с описанием товаров и услуг,
-                            которые будут исполнены
-                          </FormDescription>
-                          <FormControl>
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead className=""></TableHead>
-                                  <TableHead className="w-[541px]">
-                                    Описание
-                                  </TableHead>
-                                  <TableHead className="text-center">
-                                    Стоимость
-                                  </TableHead>
-                                  <TableHead></TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {myForm
-                                  .getValues("service")
-                                  .map((item, index, arr) => (
-                                    <TableRow key={item.id}>
-                                      <TableCell>
-                                        <p className="h-10 font-medium flex items-center justify-center">
-                                          {index + 1}
-                                        </p>
-                                      </TableCell>
-                                      <TableCell>
-                                        <FormField
-                                          control={myForm.control}
-                                          name={`service.${index}.serviceName`}
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormControl>
-                                                <Input
-                                                  placeholder="Введите текст"
-                                                  {...field}
-                                                />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                      </TableCell>
-                                      <TableCell>
-                                        <FormField
-                                          control={myForm.control}
-                                          name={`service.${index}.cost`}
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormControl>
-                                                <Input
-                                                  placeholder="Введите число"
-                                                  {...field}
-                                                  onChange={(e) => {
-                                                    field.onChange(
-                                                      isNaN(+e.target.value)
-                                                        ? e.target.value
-                                                        : +e.target.value
-                                                    );
-                                                  }}
-                                                />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                      </TableCell>
-                                      <TableCell className="text-right">
-                                        <DropdownMenu>
-                                          <DropdownMenuTrigger className="h-10">
-                                            <Ellipsis width={24} height={24} />
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent>
-                                            <DropdownMenuItem
-                                              onClick={() => {
-                                                myForm.setValue(`service`, [
-                                                  ...arr.slice(0, index),
-                                                  {
-                                                    ...item,
-                                                    id:
-                                                      Math.max(
-                                                        ...myForm
-                                                          .getValues("service")
-                                                          .map(
-                                                            (item) => item.id
-                                                          )
-                                                      ) + 1,
-                                                  },
-                                                  ...arr.slice(index),
-                                                ]);
-                                              }}
-                                            >
-                                              <Copy className="!w-6 !h-6" />
-                                              <p className="text-[16px]">
-                                                Копировать
-                                              </p>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                              onClick={() => {
-                                                myForm.setValue(`service`, [
-                                                  ...arr.filter(
-                                                    (_, i) => i !== index
-                                                  ),
-                                                ]);
-                                              }}
-                                            >
-                                              <Trash2 className="text-[#FF4040] !w-6 !h-6" />
-                                              <p className="text-[16px]">
-                                                Удалить
-                                              </p>
-                                            </DropdownMenuItem>
-                                          </DropdownMenuContent>
-                                        </DropdownMenu>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                              </TableBody>
-                              <TableFooter>
-                                <TableRow>
-                                  <TableCell></TableCell>
-                                  <TableCell className="text-left p-[12px]">
-                                    <Button
-                                      type="button"
-                                      variant="link"
-                                      className="text-link p-0"
-                                      onClick={() => {
-                                        myForm.setValue(`service`, [
-                                          ...myForm.getValues("service"),
-                                          {
-                                            id:
-                                              Math.max(
-                                                ...myForm
-                                                  .getValues("service")
-                                                  .map((item) => item.id)
-                                              ) + 1,
-                                            serviceName: "",
-                                            cost: 0,
-                                          },
-                                        ]);
-                                        myForm.setFocus(
-                                          `service.${Math.max(
-                                            ...myForm
-                                              .getValues("service")
-                                              .map((item) => item.id)
-                                          )}.serviceName`
-                                        );
-                                      }}
-                                    >
-                                      + Добавить товар или услугу
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              </TableFooter>
-                            </Table>
-                          </FormControl>
-                          <FormMessage>
-                            {myForm.formState.errors.service?.message}
-                          </FormMessage>
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
+                <ServiceTable />
                 <FormField
                   control={myForm.control}
                   name="questions"
@@ -738,8 +542,6 @@ const FormPage: FC = () => {
             <form
               className="flex flex-col gap-6"
               onSubmit={formQuestionAdd.handleSubmit((date) => {
-                console.log(date.id);
-
                 if (date.id !== undefined) {
                   myForm.setValue(
                     `questions`,
@@ -833,8 +635,6 @@ const FormPage: FC = () => {
           </Form>
         </DialogContent>
       </Dialog>
-    </main>
+    </>
   );
 };
-
-export default FormPage;
