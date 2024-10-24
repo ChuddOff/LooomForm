@@ -23,13 +23,18 @@ interface Question {
   question: string;
   answer: string;
 }
+interface CurrentQuestion {
+  id: number | undefined;
+  question: string;
+  answer: string;
+}
 
 export const RegularlyQuestions = ({
   setOpenQuestionAdd,
-  reset,
+  setCurrentQuestion,
 }: {
   setOpenQuestionAdd: (arg0: boolean) => void;
-  reset: () => void;
+  setCurrentQuestion: (arg0: CurrentQuestion) => void;
 }) => {
   const { control, setValue, getValues } = useFormContext();
 
@@ -59,9 +64,7 @@ export const RegularlyQuestions = ({
                           variant="link"
                           className="text-link p-0"
                           onClick={() => {
-                            setValue("id", item.id);
-                            setValue("question", item.question);
-                            setValue("answer", item.answer);
+                            setCurrentQuestion(item);
                             setOpenQuestionAdd(true);
                           }}
                         >
@@ -128,7 +131,11 @@ export const RegularlyQuestions = ({
                 variant="link"
                 className="text-link p-0 h-[22px]"
                 onClick={() => {
-                  reset();
+                  setCurrentQuestion({
+                    id: undefined,
+                    question: "",
+                    answer: "",
+                  });
                   setOpenQuestionAdd(true);
                 }}
               >

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -7,7 +7,7 @@ export interface InputProps
 }
 
 const InputFile = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, value, ...props }, ref) => {
+  ({ className, ...props }, ref) => {
     return (
       <input
         type="file"
@@ -16,7 +16,6 @@ const InputFile = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         ref={ref}
-        value={value}
         {...props}
       />
     );

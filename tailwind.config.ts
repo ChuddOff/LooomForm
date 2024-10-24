@@ -12,7 +12,8 @@ const config: Config = {
   ],
   theme: {
     fontFamily: {
-      manrope: ["Manrope", "sans-serif"],
+      manrope: ["var(--font-manrope)"],
+      unbounded: ["var(--font-unbounded)"],
     },
     extend: {
       colors: {

@@ -4,7 +4,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -21,7 +21,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -34,7 +34,6 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
@@ -42,7 +41,9 @@ const DialogContent = React.forwardRef<
         className
       )}
       {...props}
-      style={{ maxHeight: "min(950px, calc(100vh - 120px))" }}
+      style={{
+        maxHeight: "min(950px, calc(100vh - 120px))",
+      }}
     >
       {children}
       <DialogPrimitive.Close className="absolute right-[48px] top-[48px] rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">

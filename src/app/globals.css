@@ -2,30 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Manrope";
-  src: url("/fonts/Manrope-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Unbounded";
-  src: url("/fonts/Unbounded-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-}
-
 body {
-  font-family: "Manrope", sans-serif;
-  font-weight: 400;
+  font-family: var(--font-manrope);
 }
 
 h1,
 h2,
 h3,
 label {
-  font-family: "Unbounded", sans-serif;
+  font-family: var(--font-unbounded);
 }
 
 @layer utilities {
